@@ -1,0 +1,261 @@
+---
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+\newpage
+
+# Content-based recommendation System
+
+Though Netflix offers many movies, it has a great recommendation system customized for every viewer (otherwise, we would probably be overwhelmed). So let's get to the bottom of this system and build your personalized system!
+
+There are two different recommendation systems: collaborative and content-based, but we focused on the content-based recommendation system because of its simplicity. What does that mean?
+It means that you will build a recommendation system based on your previous viewing history and recommend movies/shows with similar "content." So your content-based recommendation will base on the description, genre, and actors column.
+
+Before you start coding you should first check out the theory behind a content-based recommendation system.
+
+## Theory
+
+One of your questions probably is "How can I calculate the similarity between two movies regarding the description/genre/actors?" You will calculate the similarity of movies/shows with the cosine similarity function, but we will get to that later. The hard work will be the preparation to use the cosine similarity function.
+
+We will walk you through the theory by looking at the description column. The approach for the genre and cast columns are very similar, so don't worry!
+
+To calculate the similarity between two movies/shows regarding the description, you need to first prep the column. Therefore, you need to collect all words used in the entire description column, generate new columns with each word as titles, and fill in the cells for each movie/show with 1's if the word appears or 0's if it doesn’t appear. In the below chart, you can see what we mean :)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Correlations using Pearson Method.jpg")
+```
+
+The matrix on the right hand side is called a “Document Term Matrix”.
+
+Now let us explain what all these words above and underneath the arrow mean. "Tokenize/vectorize words" means each word has its column.
+"Transfer words to lowercase" is helpful since the same words should not be in two different columns just because one word has a capital letter and the other a lowercase. The next step is to remove stop words and punctuation since that is irrelevant to the similarity matrix. At last, you should also consider the stemming of each word to reduce verbs like waiting, waits, waited, etc. to wait. Maybe you should also only consider words that appear more often than once (50-100 times) to reduce the size of your data frame. 
+
+FYI: this method is called bag of words :)
+
+If you are in the R track then please read the following section. Python coders can skip this part.
+
+Before we can calculate the cosine similarity matrix, you first need to transpose the matrix. What does that mean? You have to switch the rows to columns and the other way around. We have visualized the idea below. (If you don’t transpose the matrix, you will calculate the similarity between each word instead of each movie.)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Correlations using Pearson Method.jpg")
+```
+Now let’s check out that scary word "cosine similarity." In our case, it calculates the similarity between two items (movies/shows) based on the description column. Mathematical speaking, "it measures the cosine of the angle between two vectors projected in a multi-dimensional space." If you are further interested in the mathematical idea/function, you can check out this website https://www.sciencedirect.com/topics/computer-science/cosine-similarity. 
+Though, this is not necessary for you to build the recommendation engine since R and Python provide packages for that function ;)
+
+The matrix below shows how the output should look like. If two movies/shows are identical, they have the value 1, and with no similarities, the value 0.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Correlations using Pearson Method.jpg")
+```
+
+So, in this case, movie 1 and 3 have the highest similarity (the identical movies have, of course, the value 1, but they aren't interesting since we want a recommendation system with new movies). In contrast, movie 1 and 2 have the lowest similarity.
+Now you have to repeat the steps above for genre and actors so that you have 3 cosine similarity matrices.
+
+At this point,  you completed the data preparation, and you can continue with the actual recommendation of some movies. The goal is to print 10 recommendations from the 5 previous movies you have watched. 
+
+For example, movie 3 was the last movie you watched. Now you need to build a data frame/matrix where all movies are in the rows, and the column from movie 3 of the similarity matrices of description/genre/actors are in each column. After that, you need to generate a final column where you weigh each similarity component for the final similarity value of each movie. 
+For example, if you say that description, genre and actors are all equally important to you, then you can choose for each a 1/3 share: 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Correlations using Pearson Method.jpg")
+```
+
+You can see in the below graph what we mean :)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Correlations using Pearson Method.jpg")
+```
+
+In this case, movie 1 has a higher similarity than movie 2 regarding movie 3, so your recommendation would be to watch movie 1. 
+That's the theory behind the content-based recommendation system (yeah!). 
+Phew, that was a lot! If you have any questions, please ask your mentor; they are happy to help you! 
+
+If not, let’s get ready to rumble!
+
+
+
+## Bag of words
+
+As mentioned in the theory chapter, you need to extract all words from the description/genre/cast column with the bag of words approach. We suggest starting with the description, continuing with the genres, and ending with the actors. 
+
+Below you can see the example for the description column.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Correlations using Pearson Method.jpg")
+```
+
+### Creating a corpus
+
+Before you start, you first need to create a corpus to vectorize the words in each column.
+
+::: {.tips .r data-latex="r"}
+We recommend using the tm and SnowballC packages. Check out this [website](https://thibaut-deveraux.medium.com/how-to-create-a-bag-of-words-embedding-in-r-e609095ebf53). This article gets interesting/relevant, starting with the title “Create the bag of words.”
+
+:::
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Correlations using Pearson Method.jpg")
+```
+
+-   We have a question for you: Why is a naive correlation matrix across states likely a bad idea? Think for example about omitted variables and how information is lost when you aggregate fundamentally different groups.
+
+::: {.tips .r data-latex="r"}
+Use the `cor()` function from the `base` R to create a correlation matrix. Select all numerical variables in your data set with the help of `sapply()` or`dplyr`’s `select()` and create a correlation matrix.
+
+Alternatively, use the `ggcorrplot()` from the same-name [{ggcorrplot}](https://cran.r-project.org/web/packages/ggcorrplot/index.html) package.
+
+:::
+
+::: {.tipsp .python data-latex="p"}
+A handy library for plotting correlation matrices is the [seaborn library](https://seaborn.pydata.org/):
+
+    import seaborn as sns
+    ...
+
+You can use its `pairplot` method and pass on the data frame with the selected columns to visualize distributions and correlations.
+
+Alternatively/Additionally, you may want to plot a heatmap with `sns.heatmap(...)` which makes it even easier to see correlations.
+:::
+
+### Statewise Correlations - Seasonality & Geography
+
+Having checked a very simplistic correlation, we need to do some thinking. Our cross-section of states is characterized by heterogeneous geography and climate.
+Naturally, this also implies seasonality in our quarterly data set.
+However, due to the large size of the United States, we must not forget that for some southern states, in our data Hawaii's, seasons are less pronounced than they are in North Dakota (if you do not believe us, check the max temperature differential ...).
+
+To visualize this, you want to compute statewise correlations for either "Lost Colonies", "log Lost Colonies" or "percent Lost Colonies" and sort them by latitude. 
+As always, do not forget to label the graphs in a meaningful way, and please explain how the results of your plot can be interpreted to your audience!
+
+Below are some examples:
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/State Correlations sorted by Latitude - Lost Colonies and Quarter Dummies ex Hawaii.jpg")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/State Correlations sorted by Latitude - Lost Colonies Percent and Quarter Dummies ex Hawaii.jpg")
+```
+Note, that there might also be interaction effects, e.g. the season/climate influences the parasite population or the like.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Seasonal (temperature-related) Parasite Infestation.jpg")
+```
+
+::: {.tips .r data-latex="r"}
+We recommend you using the tidyverse approach. From previous exercises you should be well versed in using `dplyr` commands. 
+A combination of `group_by()`, `filter()`, `select()`,  and `arrange()` should do the job nicely!
+If you are unsure, check back with the dplyr cheat sheet.
+:::
+
+::: {.tipsp .python data-latex="p"}
+You should be fairly familiar with `groupby` statements by now. To sort by an underlying property of the index values, it might be of help to calculate correlations in one data frame and get a list of ordered states from another using `.reset_index()`, `.drop_duplicates()`, and `.sort_values()`. Subsequently, you can easily use `.reindex()`.
+:::
+
+### Demeaned Variables
+Create at least two variables that you want to use in the following regressions which can mitigate some of the issues touched above:
+
+* One variable that subtracts a quarter aggregate (median, mean ...) over ALL states (4 values in total) from each observation in that respective quarter
+
+**Example:** You calculate the average percentage of Varroa Mites infestation in each quarter for all states together. Subsequently, you subtract the average quarter 1 value from all states' quarter 1 values for Varroa Mites, the average quarter 2 value from all states' quarter 2 values, and so on ...
+
+
+* One measure that subtracts a quarter aggregate by state AND quarter (values equal to the number of states * 4) from all observations with the respective state and quarter
+
+**Example:** You create a measure of "abnormal" temperature. First, average the temperature grouping by state and quarter. Subsequently subtract this state- and quarter-dependent measure from each matching quarter and state.
+There are 6 years, so you will average over 6 first quarters for a given state and subsequently subtract that average from each of these 6 observations. 
+
+Additionally, add quarter dummies to your data frame. E.g. 4 columns where in each row only a single column is 1.
+
+::: {.tips .r data-latex="r"}
+As in the previous tasks, `dplyr`will be the most useful tool here. To handle date formats, check back with the `lubridate` [cheat sheet](https://raw.githubusercontent.com/rstudio/cheatsheets/main/lubridate.pdf).
+:::
+
+::: {.tipsp .python data-latex="p"}
+You best work with a `Multiindex` and employ the `.dt.quarter` property of `Datetime` columns.
+After grouping and aggregating, you can merge the values back as an additional column and simply subtract as well as reassign the result.
+:::
+
+## Pooled OLS for State Panel Data
+As we investigated correlation patterns above, we saw that panel data is not straightforward to analyze. Especially since we are only equipped with quarterly data of mere 6 years - that's not a lot.
+But you have just added a few more "normalized" variables, so we can get started with our regressions in the hope to make some interesting findings.
+
+With panel data, the basic extension of OLS (Ordinary Least Squares) regression is Pooled OLS.
+A basic Pooled OLS regression equation could look like this (a simple extension of classic OLS with state effects $\alpha_i$ and error term $\epsilon_{i,t}$:
+
+$$
+percent\_lost\_colonies_{i, t} = \mu + \beta_{1,i} \cdot varroa\_mites_{i, t} + \beta_2 \cdot quarter_1 + \dots + \alpha_i + \epsilon_{i,t}
+$$
+
+### Seasonality Specification
+Compute pooled OLS regression estimates that reflect only seasonal aspects.
+Subsequently, you will extend this model below. At the end of this section is a [#table] that may serve as an indication of what the end result could look like.
+
+::: {.tips .r data-latex="r"}
+Though you have learned to use `lm` in your DataCamp courses, you will be using the package `lfe` here, as we want to extend the model from a simple OLS model to a pooled OLS model for panel data. But do not worry, the syntax is kept close to the one of `lm`!
+
+In order to extend your OLS model, you will have to cluster your data for season (what variable do you have that can be compared to seasons?). To do so, have a look at the [documentation](https://rdrr.io/cran/lfe/man/felm.html). To help you out and eliminate unnecessary specifications for you, the `felm` command should look a little bit like this:
+
+   felm(formula | 0 | 0 | clustervar= , data= )
+   
+However, feel free to specify the model differently after having read the documentation, and let us know what you have done!
+To create a table with which you can compare your different regression models, use the `stargazer` package and specify `type="html"`.
+:::
+
+::: {.tipsp .python data-latex="p"}
+A classic package for inference is [statsmodels](https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.html#statsmodels.regression.linear_model.OLS). Standard OLS is pretty straightforward but not needed here. 
+[linearmodels](https://pypi.org/project/linearmodels/) is an extension library that supports the analysis of panel data.
+:::
+
+### Adding Geographic Aspects
+Extend your specification from above with at least one variable that reflects each states "unique" geography. 
+Whenever you add more variables be careful to avoid (multi-) collinearity (= your regressors are highly correlated among themselves).
+
+### Adding indicators for weather and parasite infestation
+Last but not least add variables (maybe some of the ones created above) that can explain even more, considering for example weather extrema and parasite infestation.
+
+When you compare all the $R^2$ of the different specifications with special attention to *within* and *between* $R^2$ what do you observe?
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Regression_Table_POLS_only.PNG")
+```
+
+## Alternative Model 
+You are completely free here. You want to check out a machine-learning approach and compare? This is your chance!
+All you have to do is estimate an alternative model (so not pooled OLS again) whose properties you can compare in a later stage.
+
+## Model Evaluation
+Model evaluation is always important, even more so when using different frameworks that you would like to compare.
+At the end of the day, we are interested in the model that reflects our empirical observations best.
+
+### Residuals Distribution (in-sample)
+When computing regression estimates the residuals as unexplained fraction of your model are the most important aspect to look at. Especially since each model assumes a certain distribution (most of the time we assume a normal distribution). Since we just assume a distribution, we must check whether these assumptions hold.
+Typical related questions are whether they are auto-correlated and whether the standard errors computer are robust (e.g. test for the presence of heteroscedasticity etc.). 
+
+Plot the residuals of one of your pooled OLS specifications and the ones of your alternative model. Do they differ fundamentally?
+
+::: {.tips .r data-latex="r"}
+As you are working with the `lfe` package, specifically the `felm` command, all your model outputs are in a `felm`-object. Therefore, unlike using `lm`, you do not need to estimate your model after you have created it as this is done automatically. To get a brief overview, click on the model in the environment. If you are not sure what you are looking for the plot, check back with the `felm`-documentation. 
+To help you out, you can extract the parts you need from the `felm`-object with the following command:
+
+x <- model[["x"]]
+
+After extracting everything you need, create a data frame and plot using `ggplot`.
+:::
+
+::: {.tipsp .python data-latex="p"}
+Your fitted models will have something like a `.predict()` method which also yields the in-sample fitted values. Moreover, the fitted model will automatically compute the residuals, for example the `.resids` attribute that you can work with. 
+Of course you could also use the regression estimates to compute both values yourself!
+:::
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width = "100%"}
+knitr::include_graphics("plot/Pooled OLS Aggregate Residuals.jpg")
+```
+
+### Model Selection
+As a wrap-up, by considering the different specifications as well as your alternative model, write a few sentences about which specification/model you believe to be best-suited for the underlying data.
+
+**Congratulations!** You’ve made it to the end of your TechAcademy Data Science project. After visualizing the data in the first part, you’ve also set up a statistical analysis in this section. If you stuck around until this part and managed to code the better part of the exercises, you have definitely earned your certificate! We hope you had fun learning Data Science with this combination of data sets and enjoyed it – at least the parts where you did not get stuck forever because of some unexplainable coding error. Do not forget to send your project results to our project submission email address before the deadline (**03.07.2022, 23:59**).
+Thank you for being a part of TechAcademy!
